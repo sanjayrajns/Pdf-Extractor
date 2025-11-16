@@ -1,4 +1,4 @@
-# Pdf-Extractor
+# Medical-Report Summarizer
 
 ![License](https://img.shields.io/badge/license-ISC-green)
 
@@ -6,18 +6,21 @@
 
 Pdf-Extractor is a web application built with Express.js that allows users to easily extract content from PDF documents. Its intuitive web interface makes the process simple and efficient.
 
-## ✨ Features
-
-- 🕸️ Web
-
-
 ## 🛠️ Tech Stack
-
+**Backend**
 - 🚀 Express.js
-
+- 📂 Multer
+- 🌐 CORS
+  
+**Frontend**
+- ⚛️ React
+- 🎨 TailwindCSS
+- 🔔 lucide-react
+- ⚡ Vite
+  
 
 ## 📦 Key Dependencies
-
+**Backend**
 ```
 @google/genai: ^1.29.1
 cors: ^2.8.5
@@ -25,12 +28,40 @@ dotenv: ^17.2.3
 express: ^5.1.0
 multer: ^2.0.2
 ```
+**Client**
+```
+react
+react-dom
+vite
+tailwindcss
+lucide-react
+```
+## Backend 
+**Create a file**
+```
+backend/.env
+```
+**Add:**
+```
+GEMINI_API_KEY=your_api_key_here
+PORT=5000
+
+```
 
 ## 🚀 Run Commands
 
-- **test**: `npm run test`
-
-
+**Backend**
+```
+cd backend
+npm install
+node server.js
+```
+**Client**
+```
+cd client
+npm install
+npm run dev
+```
 ## 📁 Project Structure
 
 ```
