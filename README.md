@@ -1,4 +1,4 @@
-# Medical-Report Summarizer
+# Medical Report Summarizer
 
 ![License](https://img.shields.io/badge/license-ISC-green)
 
@@ -70,6 +70,8 @@ npm run dev
 ├── backend
 │   ├── package.json
 │   └── server.js
+|   |---.env
+|
 └── client
     ├── eslint.config.js
     ├── index.html
