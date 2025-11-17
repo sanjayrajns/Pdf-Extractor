@@ -22,8 +22,12 @@ app.use(
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-// Primary + fallback models
-const MODELS = ["gemini-2.5-pro", "gemini-1.5-flash", "gemini-1.5-pro"];
+const MODELS = [
+  "gemini-2.5-flash",
+  "gemini-2.5-pro"
+];
+
+const PRE_CHECK_MODEL = "gemini-2.5-flash";
 
 
 const storage = multer.diskStorage({
@@ -73,7 +77,7 @@ function fileToGenerativePart(filePath, mimeType) {
 
 
 async function safeGeminiExtract(model, prompt, imagePart) {
-  const MAX_RETRIES = 3;
+  const MAX_RETRIES = 3; 
   const WAIT = (ms) => new Promise((r) => setTimeout(r, ms));
 
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
@@ -91,18 +95,56 @@ async function safeGeminiExtract(model, prompt, imagePart) {
         },
       });
 
-      return JSON.parse(response.text); // may throw
+      return JSON.parse(response.text); 
     } catch (err) {
-      console.error("Gemini error:", err.message);
+      const isUnavailableError = err.message && (
+          err.message.includes('"code":5') ||
+          err.message.toLowerCase().includes('unavailable') || 
+          err.message.toLowerCase().includes('service is currently being updated')
+      );
+      const isPermanentError = err.message && (
+          err.message.includes('"code":404') || 
+          err.message.includes('"code":429')
+      );
 
-      // If last attempt → throw hard error
-      if (attempt === MAX_RETRIES) throw err;
+      console.error(`Gemini error on model ${model} (Attempt ${attempt}):`, err.message);
 
-      // Wait before retry
-      await WAIT(1000 * attempt);
+      if (attempt === MAX_RETRIES || isPermanentError) {
+          console.log(`🛑 Stopping retries for ${model}. Triggering model fallback...`);
+          throw err;
+      }
+      
+      if (isUnavailableError) {
+          console.log(`⚠️ API UNAVAILABLE. Waiting for ${1000 * attempt}ms before retry...`);
+          await WAIT(1000 * attempt);
+          continue;
+      }
+      
+      console.log(`🛑 Non-retriable error for ${model}. Triggering model fallback...`);
+      throw err;
     }
   }
+  throw new Error(`Exceeded maximum retries (${MAX_RETRIES}) for model ${model}.`);
 }
+
+async function preliminaryCheck(imagePart) {
+  const prompt = `Analyze this document. Is it a medical lab report, such as a Blood Test, CBP, Lipid Profile, Thyroid Panel, or Urine Analysis?
+  Answer strictly with 'YES' or 'NO' only. Do not add any other text.`;
+
+  try {
+    const response = await ai.models.generateContent({
+      model: PRE_CHECK_MODEL,
+      contents: [{ role: "user", parts: [{ text: prompt }, imagePart] }],
+    });
+
+    const answer = response.text.trim().toUpperCase();
+    return answer === 'YES';
+  } catch (err) {
+    console.error("Preliminary check error:", err.message);
+    return true; 
+  }
+}
+
 
 app.get("/", (req, res) => res.send("AI Lab Extractor Backend Running"));
 
@@ -114,6 +156,18 @@ app.post("/extract", upload.single("file"), async (req, res) => {
 
   try {
     const imagePart = fileToGenerativePart(filePath, mimetype);
+    
+    const isMedicalReport = await preliminaryCheck(imagePart);
+
+    if (!isMedicalReport) {
+      console.log("Document is not a medical lab report. Aborting AI extraction.");
+      return res.status(415).json({
+        error: "Uploaded file is not a recognizable medical lab report (e.g., Lipid Profile, CBP). Please upload a valid report.",
+      });
+    }
+    
+    console.log(`Document confirmed as a medical lab report. Attempting extraction with primary model: ${MODELS[0]}`);
+    
     const prompt = "Extract lab report values accurately.";
 
     let data = null;
@@ -122,11 +176,11 @@ app.post("/extract", upload.single("file"), async (req, res) => {
         data = await safeGeminiExtract(model, prompt, imagePart);
         if (data) break;
       } catch (e) {
-        console.log("Fallback to next model...");
+        console.log(`Error with model ${model}. Falling back to next model...`);
       }
     }
 
-    if (!data) throw new Error("Gemini extraction failed on all models.");
+    if (!data) throw new Error(`Gemini extraction failed on all models: ${MODELS.join(', ')}.`);
 
     res.json({ data });
   } catch (error) {
@@ -136,7 +190,7 @@ app.post("/extract", upload.single("file"), async (req, res) => {
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
   }
 });
- 
+  
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
