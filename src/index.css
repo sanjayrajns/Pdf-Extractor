@@ -1,1 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap');
+
 @import "tailwindcss";
+
+
+
+.font-montserrat {
+  font-family: 'Montserrat', sans-serif;
+}
+
+@media print {
+  body {
+    background-color: white !important;
+    color: black !important;
+  }
+  .print\:hidden {
+    display: none !important;
+  }
+  .py-8 {
+    padding-top: 0;
+  }
+  .bg-white {
+    background-color: white !important;
+  }
+  .shadow-lg, .shadow-md, .shadow {
+    box-shadow: none !important;
+  }
+  .border {
+    border-color: #e5e7eb !important;
+  }
+  h2, th, td {
+    color: black !important;
+  }
+  table {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
