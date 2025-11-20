@@ -59,7 +59,6 @@ node server.js
 ```
 **Client**
 ```
-cd client
 npm install
 npm run dev
 ```
