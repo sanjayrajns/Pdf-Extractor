@@ -1,12 +1,14 @@
 const fs = require("fs");
 const { fileToGenerativePart } = require("../utils/fileUtils");
 const { performPreliminaryCheck, extractData } = require("../services/geminiService");
+const { db } = require("../services/firebaseService");
 
 exports.processExtraction = async (req, res) => {
   if (!req.file) return res.status(400).json({ error: "No file uploaded." });
 
   const filePath = req.file.path;
   const mimetype = req.file.mimetype;
+  const silentId = req.headers["x-user-id"]; // Get Silent ID from headers
 
   try {
     // 1. Validation
@@ -30,6 +32,20 @@ exports.processExtraction = async (req, res) => {
     // 3. Extraction
     const data = await extractData(imagePart);
     
+    // 4. Persistence (Save if Silent ID is present)
+    if (silentId) {
+        try {
+            await db.collection("extractions").doc(silentId).set({
+                results: data.results, // Assuming 'data' has a 'results' key based on App.jsx usage
+                updatedAt: new Date().toISOString()
+            }, { merge: true });
+            console.log(`Data saved for user: ${silentId}`);
+        } catch (dbError) {
+            console.error("Database Save Error:", dbError);
+            // Don't fail the request if save fails, just log it
+        }
+    }
+
     res.json({ data });
 
   } catch (error) {
