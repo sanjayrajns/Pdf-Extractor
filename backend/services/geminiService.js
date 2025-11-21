@@ -3,7 +3,7 @@ const { labReportSchema } = require("../utils/schemas");
 
 const WAIT = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// 1. Preliminary Check Logic
+
 async function performPreliminaryCheck(imagePart) {
   const prompt = `Analyze this document. Does it contain structured, quantitative laboratory data (numbers, units, reference ranges) from a clinical analysis? The document must contain key medical keywords like **HDL**, **LDL**, **Lipid profile**, **CBC**, or **Hemoglobin**. Reject documents that only contain qualitative information or obviously non-standard mock data.
   Answer strictly with 'YES' or 'NO' only.`;

@@ -5,25 +5,34 @@
 ## 📝 Description
 
 A powerful web application that extracts structured medical test data from any PDF or image-based health report regardless of format, layout, or template.
-Built with React, Node.js, Express, and AI-powered parsing, the system intelligently reads reports and returns clean, editable, categorized table data
+Built with React, Node.js, Express, and AI-powered parsing, the system intelligently reads reports and returns clean, editable, categorized table data.
+
+### ✨ New Feature: Silent Persistence
+The app now automatically saves your extraction history using a "Silent ID" system.
+- **No Login Required**: A unique ID is generated and stored in your browser.
+- **Auto-Save**: Every extraction is saved to the cloud (Firebase).
+- **Auto-Load**: Your history reappears instantly when you revisit the site.
 
 ## 🛠️ Tech Stack
 **Backend**
 - 🚀 Express.js
+- 🔥 Firebase Admin SDK (Firestore)
 - 📂 Multer
 - 🌐 CORS
-  
+- 🤖 Google Gemini AI
+
 **Frontend**
 - ⚛️ React
 - 🎨 TailwindCSS
 - 🔔 lucide-react
 - ⚡ Vite
-  
+- 🆔 uuid
 
 ## 📦 Key Dependencies
 **Backend**
 ```
 @google/genai: ^1.29.1
+firebase-admin: ^13.6.0
 cors: ^2.8.5
 dotenv: ^17.2.3
 express: ^5.1.0
@@ -36,55 +45,55 @@ react-dom
 vite
 tailwindcss
 lucide-react
+uuid
 ```
-## Backend 
-**Create a file**
-```
-backend/.env
-```
-**Add:**
-```
-GEMINI_API_KEY=your_api_key_here
-PORT=5000
 
-```
+## Backend Setup
+
+1. **Create a file** `backend/.env`:
+   ```
+   GEMINI_API_KEY=your_api_key_here
+   PORT=3000
+   ```
+
+2. **Firebase Credentials**:
+   - Place your Firebase Service Account JSON file in the `backend/` root.
+   - Ensure it is named correctly or update the path in `backend/services/firebaseService.js`.
 
 ## 🚀 Run Commands
 
 **Backend**
-```
+```bash
 cd backend
 npm install
 node server.js
 ```
+
 **Client**
-```
+```bash
 npm install
 npm run dev
 ```
+
 ## 📁 Project Structure
 
 ```
 .
 ├── backend
+│   ├── config/
+│   ├── controllers/
+│   ├── routes/
+│   ├── services/
 │   ├── package.json
-│   └── server.js
-|   |---.env
-|
-└── client
-    ├── eslint.config.js
-    ├── index.html
-    ├── package.json
-    ├── public
-    │   └── vite.svg
-    ├── src
-    │   ├── App.css
-    │   ├── App.jsx
-    │   ├── assets
-    │   │   └── react.svg
-    │   ├── index.css
-    │   └── main.jsx
-    └── vite.config.js
+│   ├── server.js
+│   └── .env
+│
+└── src (Frontend)
+    ├── components/
+    ├── utils/
+    ├── App.jsx
+    ├── main.jsx
+    └── index.css
 ```
 
 ## 👥 Contributing
@@ -92,7 +101,7 @@ npm run dev
 Contributions are welcome! Here's how you can help:
 
 1. **Fork** the repository
-2. **Clone** your fork: `git clone https://github.com/sanjayrajns/Pdf-Extractor.git`
+2. **Clone** your fork: `git clone https://github.com/sanjayrajns/medx.git`
 3. **Create** a new branch: `git checkout -b feature/your-feature`
 4. **Commit** your changes: `git commit -am 'Add some feature'`
 5. **Push** to your branch: `git push origin feature/your-feature`
@@ -103,5 +112,3 @@ Please ensure your code follows the project's style guidelines and includes test
 ## 📜 License
 
 This project is licensed under the ISC License.
-
----

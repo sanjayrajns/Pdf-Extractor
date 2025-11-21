@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "./components/Header";
 import FileUploader from "./components/FileUploader";
 import ErrorMessage from "./components/ErrorMessage";
@@ -8,6 +8,7 @@ import SummaryCards from "./components/Results/SummaryCards";
 import ReportTable from "./components/Results/ReportTable";
 import { API_ENDPOINT } from "./utils/constants";
 import { groupByHeading } from "./utils/helpers";
+import { getSilentId } from "./utils/idUtils";
 
 function App() {
   const [file, setFile] = useState(null);
@@ -15,6 +16,31 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [isDarkMode, setIsDarkMode] = useState(true);
+
+  // LOAD HISTORY ON MOUNT
+  useEffect(() => {
+    const fetchHistory = async () => {
+      const silentId = getSilentId();
+      try {
+        // Assuming API_ENDPOINT is something like http://localhost:3000/api/extract
+        // We need to construct the history URL. 
+        const baseUrl = API_ENDPOINT.replace('/extract', ''); 
+        const res = await fetch(`${baseUrl}/history/${silentId}`);
+        
+        if (res.ok) {
+          const historyData = await res.json();
+          if (historyData.data && historyData.data.results) {
+             const grouped = groupByHeading(historyData.data.results);
+             setGroupedResults(grouped);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load history:", err);
+      }
+    };
+
+    fetchHistory();
+  }, []);
 
   // HANDLES FILE UPLOAD AND EXTRACTION
   const handleExtract = async (fileToUpload) => {
@@ -29,8 +55,12 @@ function App() {
     formData.append("file", uploadFile);
 
     try {
+      const silentId = getSilentId();
       const res = await fetch(API_ENDPOINT, {
         method: "POST",
+        headers: {
+            "x-user-id": silentId
+        },
         body: formData,
       });
 

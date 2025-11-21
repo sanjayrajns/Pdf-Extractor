@@ -1,4 +1,4 @@
-export const API_ENDPOINT = "http://localhost:3000/extract";
+export const API_ENDPOINT = "http://localhost:3000/api/extract";
 
 export const TABLE_HEADERS = [
   { key: "test_name", label: "Test Name" },
